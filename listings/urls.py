@@ -21,4 +21,6 @@ urlpatterns = [
     
     # Favorites
     path('listing/<int:pk>/favorite/', views.toggle_favorite, name='toggle_favorite'),
+    
+    path('debug-urls/', views.debug_urls, name='debug_urls'),
 ] 

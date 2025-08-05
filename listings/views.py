@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from .models import Listing, UserProfile, Favorite, ListingImage
 from .forms import UserRegistrationForm, UserProfileForm, ListingForm, ListingImageForm, SearchForm
+from django.http import HttpResponse
 
 def home(request):
     """Home page with featured listings and search form"""
@@ -71,7 +72,7 @@ def register(request):
             # Log the user in
             login(request, user)
             messages.success(request, 'Account created successfully! Welcome to RoomLink Nairobi!')
-            return redirect('home')
+            return redirect('listings:home')
     else:
         form = UserRegistrationForm()
     
@@ -127,7 +128,7 @@ def create_listing(request):
                 test_url = reverse('listing_detail', kwargs={'pk': listing.pk})
                 print(f"Reverse URL works: {test_url}")  # Debug
                 messages.success(request, 'Listing created successfully!')
-                return redirect('listing_detail', pk=listing.pk)
+                return redirect('listings:listing_detail', pk=listing.pk)
             except Exception as e:
                 print(f"Reverse failed: {e}")  # Debug
                 messages.error(request, f'Listing created but redirect failed: {e}')
@@ -231,3 +232,12 @@ def about(request):
 def contact(request):
     """Contact page"""
     return render(request, 'listings/contact.html')
+
+# Add this to your listings/views.py temporarily
+def debug_urls(request):
+    from django.urls import get_resolver
+    resolver = get_resolver()
+    url_list = []
+    for pattern in resolver.url_patterns:
+        url_list.append(str(pattern))
+    return HttpResponse(f"Available URLs: {url_list}")

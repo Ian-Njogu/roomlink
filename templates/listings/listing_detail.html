@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ listing.title }} - RoomLink Nairobi{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'listings:home' %}" class="text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{% url 'listings:search' %}" class="text-gray-700 hover:text-blue-600">Properties</a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-gray-500">{{ listing.title }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+            <!-- Property Images -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                {% if listing.main_image %}
+                    <img src="{{ listing.main_image.url }}" alt="{{ listing.title }}" class="w-full h-96 object-cover">
+                {% else %}
+                    <div class="w-full h-96 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-home text-gray-400 text-6xl"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Property Details -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h1 class="text-3xl font-bold text-gray-900">{{ listing.title }}</h1>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'listings:toggle_favorite' listing.pk %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    id="favorite-btn-{{ listing.id }}"
+                                    class="flex items-center space-x-2 px-4 py-2 border rounded-md transition duration-300 {% if is_favorited %}bg-red-50 border-red-200 text-red-600{% else %}bg-white border-gray-300 text-gray-700 hover:bg-gray-50{% endif %}">
+                                {% if is_favorited %}
+                                    <i class="fas fa-heart text-red-500"></i>
+                                    <span>Favorited</span>
+                                {% else %}
+                                    <i class="far fa-heart"></i>
+                                    <span>Favorite</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <div class="text-3xl font-bold text-blue-600">KSh {{ listing.price|floatformat:0 }}</div>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>Posted {{ listing.created_at|timesince }} ago
+                    </div>
+                </div>
+
+                <!-- Property Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-bed text-blue-600 text-2xl mb-2"></i>
+                        <div class="text-lg font-semibold">{{ listing.bedrooms }}</div>
+                        <div class="text-sm text-gray-600">Bedrooms</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-bath text-blue-600 text-2xl mb-2"></i>
+                        <div class="text-lg font-semibold">{{ listing.bathrooms }}</div>
+                        <div class="text-sm text-gray-600">Bathrooms</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-home text-blue-600 text-2xl mb-2"></i>
+                        <div class="text-lg font-semibold">{{ listing.property_type|title }}</div>
+                        <div class="text-sm text-gray-600">Type</div>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-couch text-blue-600 text-2xl mb-2"></i>
+                        <div class="text-lg font-semibold">{{ listing.furnished|title }}</div>
+                        <div class="text-sm text-gray-600">Furnished</div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                        <i class="fas fa-map-marker-alt text-blue-600 mr-2"></i>Location
+                    </h3>
+                    <p class="text-gray-700">{{ listing.location }}</p>
+                    <p class="text-gray-600 text-sm mt-1">{{ listing.address }}</p>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                    <p class="text-gray-700 leading-relaxed">{{ listing.description|linebreaks }}</p>
+                </div>
+
+                <!-- Amenities -->
+                {% if listing.amenities %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Amenities</h3>
+                        <p class="text-gray-700">{{ listing.amenities|linebreaks }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Additional Details -->
+                {% if listing.square_feet %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Additional Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-gray-600">Square Feet:</span>
+                                <span class="font-medium">{{ listing.square_feet }} sq ft</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Availability:</span>
+                                <span class="font-medium {% if listing.availability == 'available' %}text-green-600{% elif listing.availability == 'pending' %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                    {{ listing.availability|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <!-- Contact Information -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Posted by</h4>
+                        <p class="text-gray-700">{{ listing.posted_by.get_full_name|default:listing.posted_by.username }}</p>
+                    </div>
+
+                    {% if listing.contact_phone %}
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">
+                                <i class="fas fa-phone text-blue-600 mr-2"></i>Phone
+                            </h4>
+                            <a href="tel:{{ listing.contact_phone }}" class="text-blue-600 hover:text-blue-700">
+                                {{ listing.contact_phone }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if listing.contact_email %}
+                        <div>
+                            <h4 class="font-medium text-gray-900 mb-2">
+                                <i class="fas fa-envelope text-blue-600 mr-2"></i>Email
+                            </h4>
+                            <a href="mailto:{{ listing.contact_email }}" class="text-blue-600 hover:text-blue-700">
+                                {{ listing.contact_email }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <div class="pt-4 border-t">
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md font-medium transition duration-300">
+                            <i class="fas fa-envelope mr-2"></i>Send Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Similar Properties -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Similar Properties</h3>
+                <p class="text-gray-600 text-sm">More properties in {{ listing.location }}</p>
+                <a href="{% url 'listings:search' %}?location={{ listing.location }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    View all in {{ listing.location }} <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons for Owner -->
+    {% if user == listing.posted_by %}
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Manage Listing</h3>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="{% url 'listings:edit_listing' listing.pk %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 text-center">
+                    <i class="fas fa-edit mr-2"></i>Edit Listing
+                </a>
+                <a href="{% url 'listings:delete_listing' listing.pk %}" 
+                   class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 text-center">
+                    <i class="fas fa-trash mr-2"></i>Delete Listing
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

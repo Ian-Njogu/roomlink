@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RoomLink Nairobi - Find Your Perfect Home{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .listing-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'listings:home' %}" class="flex items-center space-x-2">
+                        <i class="fas fa-home text-blue-600 text-2xl"></i>
+                        <span class="text-xl font-bold text-gray-900">RoomLink Nairobi</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{% url 'listings:home' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-search mr-1"></i>Browse
+                    </a>
+                    <a href="{% url 'listings:search' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-filter mr-1"></i>Search
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'listings:create_listing' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-plus mr-1"></i>Post Listing
+                        </a>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-1 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span>{{ user.username }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
+                                <a href="{% url 'listings:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>Profile
+                                </a>
+                                <a href="{% url 'admin:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'listings:register' %}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-user-plus mr-1"></i>Register
+                        </a>
+                        <a href="{% url 'admin:login' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Login
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-md {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700{% elif message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">{{ message }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">RoomLink Nairobi</h3>
+                    <p class="text-gray-300 text-sm">
+                        Your trusted platform for finding the perfect home in Nairobi. 
+                        Connect with landlords and find your ideal living space.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="{% url 'listings:home' %}" class="hover:text-white">Browse Listings</a></li>
+                        <li><a href="{% url 'listings:search' %}" class="hover:text-white">Search</a></li>
+                        <li><a href="{% url 'listings:about' %}" class="hover:text-white">About Us</a></li>
+                        <li><a href="{% url 'listings:contact' %}" class="hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">For Landlords</h4>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="{% url 'listings:create_listing' %}" class="hover:text-white">Post a Listing</a></li>
+                        <li><a href="#" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white">Landlord Guide</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-300">
+                <p>&copy; 2025 RoomLink Nairobi. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Toggle favorite functionality
+        function toggleFavorite(listingId) {
+            fetch(`/listing/${listingId}/favorite/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const button = document.querySelector(`#favorite-btn-${listingId}`);
+                if (data.is_favorited) {
+                    button.innerHTML = '<i class="fas fa-heart text-red-500"></i> Favorited';
+                    button.classList.add('bg-red-50', 'border-red-200');
+                } else {
+                    button.innerHTML = '<i class="far fa-heart"></i> Favorite';
+                    button.classList.remove('bg-red-50', 'border-red-200');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

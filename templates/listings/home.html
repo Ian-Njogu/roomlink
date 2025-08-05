@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}RoomLink Nairobi - Find Your Perfect Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="gradient-bg text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            Find Your Perfect Home in Nairobi
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-blue-100">
+            Discover amazing rental properties and connect with trusted landlords
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'listings:search' %}" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300">
+                <i class="fas fa-search mr-2"></i>Browse Properties
+            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'listings:create_listing' %}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                    <i class="fas fa-plus mr-2"></i>Post a Listing
+                </a>
+            {% else %}
+                <a href="{% url 'listings:register' %}" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition duration-300">
+                    <i class="fas fa-user-plus mr-2"></i>Join Now
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Search Section -->
+<section class="bg-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gray-50 rounded-lg p-6 shadow-sm">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Find Your Ideal Property</h2>
+            <form method="get" action="{% url 'listings:search' %}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {% csrf_token %}
+                <div>
+                    <label for="{{ search_form.location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    {{ search_form.location }}
+                </div>
+                <div>
+                    <label for="{{ search_form.property_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                    {{ search_form.property_type }}
+                </div>
+                <div>
+                    <label for="{{ search_form.min_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+                    {{ search_form.min_price }}
+                </div>
+                <div>
+                    <label for="{{ search_form.max_price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+                    {{ search_form.max_price }}
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium transition duration-300">
+                        <i class="fas fa-search mr-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Listings Section -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900">Featured Properties</h2>
+            <a href="{% url 'listings:search' %}" class="text-blue-600 hover:text-blue-700 font-medium">
+                View All <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        
+        {% if page_obj %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {% for listing in page_obj %}
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden listing-card transition duration-300">
+                        {% if listing.main_image %}
+                            <img src="{{ listing.main_image.url }}" alt="{{ listing.title }}" class="w-full h-48 object-cover">
+                        {% else %}
+                            <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                                <i class="fas fa-home text-gray-400 text-4xl"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-semibold text-gray-900 truncate">{{ listing.title }}</h3>
+                                {% if user.is_authenticated %}
+                                    <button onclick="toggleFavorite({{ listing.id }})" 
+                                            id="favorite-btn-{{ listing.id }}"
+                                            class="text-gray-400 hover:text-red-500 transition duration-300">
+                                        {% if listing in user.favorites.all %}
+                                            <i class="fas fa-heart text-red-500"></i>
+                                        {% else %}
+                                            <i class="far fa-heart"></i>
+                                        {% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            <p class="text-gray-600 text-sm mb-2">
+                                <i class="fas fa-map-marker-alt mr-1"></i>{{ listing.location }}
+                            </p>
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-2xl font-bold text-blue-600">KSh {{ listing.price|floatformat:0 }}</span>
+                                <span class="text-sm text-gray-500">{{ listing.property_type|title }}</span>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <span class="mr-4"><i class="fas fa-bed mr-1"></i>{{ listing.bedrooms }} beds</span>
+                                <span><i class="fas fa-bath mr-1"></i>{{ listing.bathrooms }} baths</span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>{{ listing.created_at|timesince }} ago
+                                </span>
+                                <a href="{% url 'listings:listing_detail' listing.pk %}" 
+                                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div class="mt-8 flex justify-center">
+                    <nav class="flex items-center space-x-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <span class="px-3 py-2 bg-blue-600 text-white rounded-md">{{ num }}</span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?page={{ num }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-home text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No Properties Found</h3>
+                <p class="text-gray-600 mb-6">Try adjusting your search criteria or check back later for new listings.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'listings:create_listing' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium">
+                        <i class="fas fa-plus mr-2"></i>Post the First Listing
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">Why Choose RoomLink Nairobi?</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Trusted Landlords</h3>
+                <p class="text-gray-600">All our landlords are verified to ensure you find safe and reliable accommodation.</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Easy Search</h3>
+                <p class="text-gray-600">Find your perfect home with our advanced search filters and detailed property information.</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heart text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Save Favorites</h3>
+                <p class="text-gray-600">Save your favorite properties and get notified when similar listings become available.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 
